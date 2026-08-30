@@ -19,15 +19,22 @@ const checkPermission = (permissions, action) => {
   return "Granted";
 };
 
-let ArryOfResult = [];
+// let ArryOfResult = [];
 
-requestedActions.forEach((action) => {
-  const result = checkPermission(userPermissions, action);
+// using forEach Appraoch where I need to define an Array First
+// requestedActions.forEach((action) => {
+//   const result = checkPermission(userPermissions, action);
 
-  //   const obj = { action : result };
+//   //   const obj = { action : result };
 
-  //   console.log(obj);
-  ArryOfResult.push({ [action]: result });
+//   //   console.log(obj);
+//   ArryOfResult.push({ [action]: result });
+// });
+
+// we can get the same result using map like this
+
+const ArryOfResult = requestedActions.map((action) => {
+  return checkPermission(userPermissions, action);
 });
 
 console.log(ArryOfResult);
