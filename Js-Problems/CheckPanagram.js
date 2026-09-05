@@ -12,35 +12,21 @@ Output 2: true
 
 */
 
-const LETTERS = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
-];
+const isPangram = (sentence) => {
+  const lowerCaseStr = sentence.toLowerCase().split("");
+  //   console.log(lowerCaseStr);
 
-function isPangram(sentence) {
-  // Your code goes here
-}
+  const uniqueCharacters = new Set();
+
+  lowerCaseStr.forEach((char) => {
+    if (char >= "a" && char <= "z") {
+      uniqueCharacters.add(char);
+    }
+  });
+
+  //   console.log(uniqueCharacters.size);
+
+  return uniqueCharacters.size === 26;
+};
+
+console.log(isPangram("TheQuickBrownFoxJumpsOverTheLazyDog"));
