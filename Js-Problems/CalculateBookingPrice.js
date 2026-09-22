@@ -17,7 +17,7 @@ const bookingCalculate = (nights, checkInDate = new Date()) => {
 
   // 13 , 14 ,15 ,16 ,17 ,18 , 19
   for (let i = currentDate; i < nights + currentDate; i++) {
-    const date = new Date(); // Sun Sep 13 , Mon Sep 14
+    const date = new Date(checkInDate); // Sun Sep 13 , Mon Sep 14
     date.setDate(i); // 1 , 2, 3, 4 ,5 ,6 , 7
     let currentDay = date.getDay();
 
