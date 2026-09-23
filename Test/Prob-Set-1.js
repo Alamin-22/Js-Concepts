@@ -121,4 +121,84 @@ const formatLogs = (logs, keyword) => {
   return [...new Set(res)];
 };
 
-console.log(formatLogs(logs, keyword));
+// console.log(formatLogs(logs, keyword));
+
+// Prob 2
+
+const localCart = [
+  { id: 101, name: "iPhone 12", quantity: 1 },
+  { id: 102, name: "MacBook Air", quantity: 1 },
+];
+
+const dbCart = [
+  { id: 101, name: "iPhone 12", quantity: 2 },
+  { id: 103, name: "AirPods Pro", quantity: 1 },
+];
+
+const mergeCarts = (localCart, dbCart) => {
+  const mergedCarts = [...localCart, ...dbCart];
+
+  const uniqueCarts = new Map();
+
+  for (const cart of mergedCarts) {
+    const isExist = uniqueCarts.has(cart.id);
+    if (isExist) {
+      // I shallow copied this so that it dont change the main array
+      const existedCart = { ...uniqueCarts.get(cart.id) };
+      existedCart.quantity += cart.quantity;
+
+      uniqueCarts.set(cart.id, existedCart);
+    } else {
+      uniqueCarts.set(cart.id, cart);
+    }
+  }
+  console.log("OriginalArry=> ", mergedCarts);
+
+  return [...uniqueCarts.values()];
+};
+
+// console.log(mergeCarts(localCart, dbCart));
+
+//
+
+const transactions = [
+  { userId: "u1", amount: 50, type: "credit" },
+  { userId: "u2", amount: 100, type: "credit" },
+  { userId: "u1", amount: 20, type: "debit" },
+  { userId: "u3", amount: 40, type: "debit" },
+  { userId: "u2", amount: 100, type: "debit" },
+];
+
+const calculateBalances = (transactions) => {
+  const usersSummery = new Map();
+
+  for (const trans of transactions) {
+    const isExist = usersSummery.has(trans.userId);
+    // const currentData=
+    // using this we are keeping the track does this user already in the obj or nt
+    if (isExist) {
+      const existingAmount = usersSummery.get(trans.userId);
+      // console.log(existingAmount);
+      // now we have to determine what type is
+      if (trans.type === "credit") {
+        usersSummery.set(trans.userId, trans.amount + existingAmount);
+      } else {
+        usersSummery.set(trans.userId, existingAmount - trans.amount);
+      }
+    } else {
+      // now we have to determine what type is
+      if (trans.type === "credit") {
+        /* 
+         {"a1": 50}
+        */
+        usersSummery.set(trans.userId, trans.amount);
+      } else {
+        // "a1": -40
+        usersSummery.set(trans.userId, -trans.amount);
+      }
+    }
+  }
+  return Object.fromEntries(usersSummery);
+};
+
+console.log(calculateBalances(transactions));
