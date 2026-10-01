@@ -127,16 +127,8 @@ const processWebhookStream = async (events) => {
   try {
     const resolvedPromises = await Promise.allSettled(arryOfPromises);
 
-    // const deliveredEvents = resolvedPromises
-    //   .filter((e) => e.status === "fulfilled")
-    //   .map((e) => {
-    //     return e.value;
-    //   });
-    // const failedEvents = resolvedPromises.filter(
-    //   (e) => e.status === "rejected",
-    // );
-
     const deliveredIdsByTenant = new Map();
+    const deadLetterQueue = [];
 
     resolvedPromises.forEach((res, i) => {
       const originalEvent = uniqueEvents[i];
@@ -144,28 +136,36 @@ const processWebhookStream = async (events) => {
       if (res.status === "fulfilled") {
         const deliveredEvent = res.value.eventId;
         if (deliveredIdsByTenant.has(originalEvent.tenantId)) {
+          const currentArryOfEId = deliveredIdsByTenant.get(
+            originalEvent.tenantId,
+          );
+          currentArryOfEId.push(deliveredEvent);
         } else {
-          deliveredIdsByTenant.set(originalEvent.tenantId, []);
+          deliveredIdsByTenant.set(originalEvent.tenantId, [deliveredEvent]);
         }
       } else {
-        //
+        const failedEvent = res;
+        deadLetterQueue.push({
+          eventId: originalEvent.eventId,
+          reason: failedEvent.reason,
+        });
       }
-
-      console.log(originalEvent);
     });
 
-    // const metrics = {
-    //   totalIngested: events.length,
-    //   uniqueProcessed: resolvedPromises.length,
-    //   deliveredCount: deliveredEvents.length,
-    //   failureCount: failedEvents.length,
-    // };
+    const metrics = {
+      totalIngested: events.length,
+      uniqueProcessed: uniqueEvents.length,
+      deliveredCount: deliveredIdsByTenant.size,
+      failureCount: deadLetterQueue.length,
+    };
 
-    const deadLetterQueue = [];
+    const finalResShape = {
+      metrics,
+      deliveredIdsByTenant: Object.fromEntries(deliveredIdsByTenant),
+      deadLetterQueue,
+    };
 
-    const finalResShape = { metrics };
-
-    // console.log(failedEvents, deliveredEvents);
+    console.log(finalResShape);
   } catch (err) {
     console.log(err);
   }
