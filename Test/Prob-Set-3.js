@@ -96,11 +96,104 @@ const dispatchWebhook = (event) => {
         resolve({
           eventId: event.eventId,
           status: "DELIVERED",
-          latencyMs: `<${randomDelay}>`,
+          // latencyMs: `<${randomDelay}>`,
+          latencyMs: randomDelay,
         });
       }
     }, randomDelay);
   });
 };
 
-const processWebhookStream = async (events) => {};
+const processWebhookStream = async (events) => {
+  const uniqueEvents = [];
+  const seenKeys = new Set();
+
+  for (const e of events) {
+    const cleanedTenantID = e.tenantId.trim().toLowerCase();
+    const compoundKey = `${cleanedTenantID}:${e.eventId}`;
+
+    if (seenKeys.has(compoundKey)) continue;
+
+    seenKeys.add(compoundKey);
+    uniqueEvents.push({ ...e, tenantId: cleanedTenantID });
+  }
+
+  // console.log(uniqueEvents);
+
+  const arryOfPromises = uniqueEvents.map((e) => {
+    return dispatchWebhook(e);
+  });
+
+  try {
+    const resolvedPromises = await Promise.allSettled(arryOfPromises);
+
+    // const deliveredEvents = resolvedPromises
+    //   .filter((e) => e.status === "fulfilled")
+    //   .map((e) => {
+    //     return e.value;
+    //   });
+    // const failedEvents = resolvedPromises.filter(
+    //   (e) => e.status === "rejected",
+    // );
+
+    const deliveredIdsByTenant = new Map();
+
+    resolvedPromises.forEach((res, i) => {
+      const originalEvent = uniqueEvents[i];
+
+      if (res.status === "fulfilled") {
+        const deliveredEvent = res.value.eventId;
+        if (deliveredIdsByTenant.has(originalEvent.tenantId)) {
+        } else {
+          deliveredIdsByTenant.set(originalEvent.tenantId, []);
+        }
+      } else {
+        //
+      }
+
+      console.log(originalEvent);
+    });
+
+    // const metrics = {
+    //   totalIngested: events.length,
+    //   uniqueProcessed: resolvedPromises.length,
+    //   deliveredCount: deliveredEvents.length,
+    //   failureCount: failedEvents.length,
+    // };
+
+    const deadLetterQueue = [];
+
+    const finalResShape = { metrics };
+
+    // console.log(failedEvents, deliveredEvents);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const stream = [
+  {
+    tenantId: " tenant_A ",
+    eventId: "evt_1",
+    payload: { triggerFailure: false },
+  },
+  {
+    tenantId: "tenant_a",
+    eventId: "evt_1",
+    payload: { triggerFailure: false },
+  }, // duplicate compound key
+  { tenantId: "tenant_B", eventId: "evt_2", payload: { triggerFailure: true } }, // fails delivery
+  {
+    tenantId: "tenant_A",
+    eventId: "evt_3",
+    payload: { triggerFailure: false },
+  },
+  { tenantId: "", eventId: "evt_4", payload: { triggerFailure: false } }, // malformed
+  {
+    tenantId: "tenant_C",
+    eventId: "evt_5",
+    payload: { triggerFailure: false },
+  },
+];
+
+processWebhookStream(stream);
