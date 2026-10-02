@@ -129,7 +129,7 @@ const processWebhookStream = async (events) => {
 
     const deliveredIdsByTenant = new Map();
     const deadLetterQueue = [];
-
+    let deliveredTotal = 0;
     resolvedPromises.forEach((res, i) => {
       const originalEvent = uniqueEvents[i];
 
@@ -143,6 +143,7 @@ const processWebhookStream = async (events) => {
         } else {
           deliveredIdsByTenant.set(originalEvent.tenantId, [deliveredEvent]);
         }
+        deliveredTotal++;
       } else {
         const failedEvent = res;
         deadLetterQueue.push({
@@ -155,7 +156,7 @@ const processWebhookStream = async (events) => {
     const metrics = {
       totalIngested: events.length,
       uniqueProcessed: uniqueEvents.length,
-      deliveredCount: deliveredIdsByTenant.size,
+      deliveredCount: deliveredTotal,
       failureCount: deadLetterQueue.length,
     };
 
