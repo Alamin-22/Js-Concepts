@@ -119,7 +119,10 @@ const buildLogDashboard = async (logIds) => {
         if (successData.severity !== "info") {
           fulfilledData.push({
             ...successData,
-            service: successData.service.trim().toLowerCase(),
+            service: successData.service
+              .trim()
+              .toLowerCase()
+              .replaceAll("-", "_"),
             timestamp: new Date(successData.timestamp),
           });
         }
@@ -153,7 +156,8 @@ const buildLogDashboard = async (logIds) => {
 
     // console.log(Object.fromEntries(GroupedData));
     // console.log(finalResShape, { depth: null }); // it should show the exact result but dont now why it shows just obj obj
-    console.log(JSON.stringify(finalResShape, null, 2));
+    // console.log(JSON.stringify(finalResShape, null, 2));
+    console.dir(finalResShape, { depth: null });
   } catch (err) {
     console.log(err);
   }
