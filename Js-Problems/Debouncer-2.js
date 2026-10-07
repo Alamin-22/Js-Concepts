@@ -68,13 +68,14 @@ const sendToServer = (batchArray) => {
 
 const createBatcher = (callback, delay) => {
   let timerId;
-  const arryofEvents = [];
+  let arryofEvents = [];
 
   return (eventName) => {
     arryofEvents.push(eventName);
     clearTimeout(timerId);
     timerId = setTimeout(() => {
       callback(arryofEvents);
+      arryofEvents = [];
     }, delay);
   };
 };
