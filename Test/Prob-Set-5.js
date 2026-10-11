@@ -55,7 +55,32 @@ const chargeCreditCard = (amount) => {
   return `RECEIPT_ID_${Math.floor(Math.random() * 10000)}`;
 };
 
-// well according to the problem statement I need to apply the cache mechanism to solve this 
+// well according to the problem statement I need to apply the cache mechanism to solve this
 const makeIdempotent = (callback) => {
+  let hasRun = false;
+  let SavedReceipt;
 
+  return (amount) => {
+    if (hasRun) return SavedReceipt;
+
+    SavedReceipt = callback(amount);
+    hasRun =true;
+    return SavedReceipt;
+  };
 };
+
+const safeCharge = makeIdempotent(chargeCreditCard);
+
+console.log("Client clicks checkout...");
+const receipt1 = safeCharge(150);
+console.log("Result 1:", receipt1);
+
+console.log("\nClient's internet drops, browser auto-retries 2 more times...");
+const receipt2 = safeCharge(150);
+console.log("Result 2:", receipt2);
+
+const receipt3 = safeCharge(150);
+console.log("Result 3:", receipt3);
+
+// If correct, the Stripe API should only log ONCE.
+// But receipt1, receipt2, and receipt3 should all contain the EXACT SAME receipt ID!
